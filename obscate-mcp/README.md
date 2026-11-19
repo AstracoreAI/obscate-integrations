@@ -27,6 +27,37 @@ best-effort. Check the output if recall on those matters to you.
 ([Detectors and accuracy](https://obscate.com/docs/detectors),
 [benchmark methodology](https://obscate.com/docs/benchmark).)
 
+## Known limitation: partial values come back wrong
+
+If the model quotes only **part** of a redacted value ("your card ending in
+7588", "the email starting with…"), restore can't fix it: it matches whole
+tokens, and a fragment isn't one. With `fpe` this fails **silently and
+plausibly**. The fake card looks like a real card, so its last four digits
+look like real digits, and your user sees a confident, wrong statement about
+their own data. Assistants paraphrase values like this all the time, so expect
+it in normal use.
+
+What we measured with real Claude (`claude-haiku-5-5`, a support-reply prompt,
+3 runs each; a small test, not a guarantee):
+
+| setup | replies stating wrong card digits |
+|---|---|
+| `fpe`, plain prompt | 2 of 3 |
+| `fpe` + the instruction below in the system prompt | 0 of 3 |
+| `tokenize`, plain prompt | 0 of 3 |
+
+For user-facing output where the model may paraphrase values:
+
+- Add to your system prompt: *"When you mention a card number, email or phone
+  number, repeat it exactly and in full as given. Never abbreviate, mask or
+  quote part of it."*
+- Or use `strategy="tokenize"`: models treat `[CREDIT_CARD_1]` as a unit and
+  don't split it, and restore only touches tokens in its map.
+
+Partial references are a boundary of any reversible-redaction approach, not
+only ours: once the model only sees a stand-in, a fragment of the stand-in can
+never map back to a fragment of the original.
+
 ## Quickstart (about 3 minutes)
 
 1. **Get a free API key** at [obscate.com](https://obscate.com) ([quickstart](https://obscate.com/docs/quickstart)). It is free

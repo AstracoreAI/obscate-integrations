@@ -8,6 +8,37 @@ It is a thin wrapper over the [Obscate](https://obscate.com) HTTP API.
 Detection runs in the API, not in this package. Full docs:
 [obscate.com/docs/llamaindex](https://obscate.com/docs/llamaindex).
 
+## Known limitation: partial values come back wrong
+
+If the model quotes only **part** of a redacted value ("your card ending in
+7588", "the email starting with…"), restore can't fix it: it matches whole
+tokens, and a fragment isn't one. With `fpe` this fails **silently and
+plausibly**. The fake card looks like a real card, so its last four digits
+look like real digits, and your user sees a confident, wrong statement about
+their own data. Assistants paraphrase values like this all the time, so expect
+it in normal use.
+
+What we measured with real Claude (`claude-haiku-5-5`, a support-reply prompt,
+3 runs each; a small test, not a guarantee):
+
+| setup | replies stating wrong card digits |
+|---|---|
+| `fpe`, plain prompt | 2 of 3 |
+| `fpe` + the instruction below in the system prompt | 0 of 3 |
+| `tokenize`, plain prompt | 0 of 3 |
+
+For user-facing output where the model may paraphrase values:
+
+- Add to your system prompt: *"When you mention a card number, email or phone
+  number, repeat it exactly and in full as given. Never abbreviate, mask or
+  quote part of it."*
+- Or use `strategy="tokenize"`: models treat `[CREDIT_CARD_1]` as a unit and
+  don't split it, and restore only touches tokens in its map.
+
+Partial references are a boundary of any reversible-redaction approach, not
+only ours: once the model only sees a stand-in, a fragment of the stand-in can
+never map back to a fragment of the original.
+
 ## Quickstart (under 5 minutes)
 
 ```bash
@@ -96,11 +127,6 @@ never breaks an answer. If you keep fpe output to restore later, keep
 - **Embeddings.** Your embedding model sees raw text when you index and query.
   If it is a remote API, use a local embedding model or redact documents
   before indexing.
-- **Partial values can't be restored.** If the model quotes only part of a
-  redacted value ("card ending in 7588", where 7588 is the end of the fpe
-  token), that fragment comes back as-is and is wrong. Seen with real Claude
-  output. Ask the model to repeat values whole, or use `tokenize`, whose
-  `[CREDIT_CARD_1]` tokens models don't split.
 - **Streaming.** Answers are read to completion and then restored, because a
   token can be split across chunks.
 - **LlamaIndex's own DEBUG logs.** `llama_index.core.indices.utils` logs
