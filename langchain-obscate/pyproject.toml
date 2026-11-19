@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langchain-obscate"
+version = "0.1.0"
+description = "Reversible PII redaction for LangChain: redact before the LLM, restore after (Obscate API)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Skycast" }]
+keywords = ["langchain", "pii", "redaction", "privacy", "llm", "agents", "dpdp", "gdpr"]
+dependencies = ["langchain-core>=1.0,<2", "httpx>=0.27"]
+
+[project.optional-dependencies]
+agents = ["langchain>=1.0,<2"]
+examples = ["langchain-anthropic>=1.0", "python-dotenv>=1.0"]
+test = ["pytest>=8", "anyio>=4", "langchain>=1.0,<2"]
+
+[project.urls]
+Homepage = "https://obscate.com"
+Documentation = "https://obscate.com/docs/langchain"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/langchain_obscate"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

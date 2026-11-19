@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llama-index-postprocessor-obscate"
+version = "0.1.0"
+description = "Reversible PII redaction for LlamaIndex: redact retrieved nodes and queries before the LLM, restore the answer (Obscate API)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Skycast" }]
+keywords = ["llama-index", "llamaindex", "pii", "redaction", "privacy", "rag", "dpdp", "gdpr"]
+dependencies = ["llama-index-core>=0.12,<0.15", "httpx>=0.27"]
+
+[project.optional-dependencies]
+examples = ["llama-index-llms-anthropic>=0.6"]
+test = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://obscate.com"
+Documentation = "https://obscate.com/docs/llamaindex"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llama_index"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

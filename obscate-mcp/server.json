@@ -1,0 +1,37 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.obscate/mcp",
+  "title": "Obscate PII redaction",
+  "description": "Reversible PII redaction for agents: redact text/JSON before tool calls, restore replies.",
+  "websiteUrl": "https://obscate.com/docs/mcp",
+  "repository": {
+    "url": "https://github.com/REPLACE_ME/obscate-integrations",
+    "source": "github",
+    "subfolder": "obscate-mcp"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "obscate-mcp",
+      "version": "0.1.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "OBSCATE_API_KEY",
+          "description": "Obscate API key (free tier: 1,000 requests/month at https://obscate.com)",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "OBSCATE_BASE_URL",
+          "description": "API base URL; set only for a self-hosted Obscate instance",
+          "default": "https://api.obscate.com",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
