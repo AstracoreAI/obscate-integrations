@@ -6,7 +6,7 @@ third-party API), then restores the real values in the reply.
 
 It is a thin wrapper over the [Obscate](https://obscate.com) HTTP API.
 Full docs: [obscate.com/docs/mcp](https://obscate.com/docs/mcp).
-Detection runs in the API (hosted, or your own self-hosted instance). This
+Detection runs in the hosted API (a self-hosted edition is in pilot). This
 package only forwards calls.
 
 <!-- mcp-name: com.obscate/mcp -->

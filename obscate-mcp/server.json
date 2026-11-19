@@ -5,7 +5,7 @@
   "description": "Reversible PII redaction for agents: redact text/JSON before tool calls, restore replies.",
   "websiteUrl": "https://obscate.com/docs/mcp",
   "repository": {
-    "url": "https://github.com/REPLACE_ME/obscate-integrations",
+    "url": "https://github.com/AstracoreAI/obscate-integrations",
     "source": "github",
     "subfolder": "obscate-mcp"
   },

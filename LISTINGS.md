@@ -7,7 +7,7 @@ Every step below needs the owner (Skycast) to do or approve it.
 
 1. **Public GitHub repo** for this folder (e.g. `github.com/<org>/obscate-integrations`).
    The MCP registry and the awesome lists need a public source link. Replace
-   `REPLACE_ME` in `obscate-mcp/server.json` and in the PR text below.
+   `AstracoreAI` in `obscate-mcp/server.json` and in the PR text below.
 2. **License.** The packages are marked **MIT** (common for client SDKs and
    expected by the awesome lists). Change `LICENSE` and the three
    `pyproject.toml` files if you want a different one.
@@ -54,7 +54,7 @@ cd obscate-mcp && mcp-publisher publish                               # reads se
 alphabetical order). The line to add:
 
 ```markdown
-- [REPLACE_ME/obscate-integrations](https://github.com/REPLACE_ME/obscate-integrations/tree/main/obscate-mcp) 🐍 ☁️ 🏠 - Reversible PII redaction for agents: redact text or JSON (emails, phones, cards, Aadhaar/PAN, names) before a tool call and restore the reply. Format-preserving (FF1) or token strategies; hosted API or self-hosted.
+- [AstracoreAI/obscate-integrations](https://github.com/AstracoreAI/obscate-integrations/tree/main/obscate-mcp) 🐍 ☁️ - Reversible PII redaction for agents: redact text or JSON (emails, phones, cards, Aadhaar/PAN, names) before a tool call and restore the reply. Format-preserving (FF1) or token strategies; hosted API (self-hosted edition in pilot).
 ```
 
 PR title: `Add Obscate (reversible PII redaction)`
@@ -68,7 +68,7 @@ the reply.
 
 - Tools: redact, restore, detect, redact_json, restore_json, list_entities
 - Python, official MCP SDK; `uvx obscate-mcp`
-- Needs an API key (free tier: 1,000 requests/month). Can point at a self-hosted instance.
+- Needs an API key (free tier: 1,000 requests/month). A self-hosted edition is in pilot (not generally available).
 - Structured IDs are regex/checksum-based; names and places are NER, best-effort.
 - MIT licensed.
 ```
@@ -77,7 +77,7 @@ the reply.
 match). Use the same line without the emoji legend:
 
 ```markdown
-- **[Obscate](https://github.com/REPLACE_ME/obscate-integrations/tree/main/obscate-mcp)** - Reversible PII redaction for agents: redact text/JSON before tool calls and restore replies (format-preserving or token strategies).
+- **[Obscate](https://github.com/AstracoreAI/obscate-integrations/tree/main/obscate-mcp)** - Reversible PII redaction for agents: redact text/JSON before tool calls and restore replies (format-preserving or token strategies).
 ```
 
 Each list has its own CONTRIBUTING rules (badges, ordering, a Glama or
