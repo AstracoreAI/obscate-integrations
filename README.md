@@ -55,7 +55,7 @@ server-side key rotation with no code from you. The MCP tools return it and
 accept it, because the model carries state between tool calls. Only text you
 *store* to restore later needs `key_version` stored next to it.
 
-## Verification status (2026-11-19)
+## Verification status (2026-11-19, updated after the live runs)
 
 | check | status |
 |---|---|
@@ -65,6 +65,7 @@ accept it, because the model carries state between tool calls. Only text you
 | Wheels and sdists build; `twine check` passes; `uvx --from <wheel> obscate-mcp` runs in a clean environment | done |
 | `server.json` validated against the MCP registry 2025-12-11 schema | done |
 | `scripts/live_e2e.py` against the obscate-api `per-account-keys` branch (per-account keys, `key_version`) running locally on port 8766 | 23/23 passing |
-| Same checks against the **live** https://api.obscate.com | **not yet run.** Needs a live key in `.env` |
-| A **real LLM** (Anthropic) in the loop | **not yet run.** Needs `ANTHROPIC_API_KEY` (paid, under $0.01 per run) |
+| Same checks against the **live** https://api.obscate.com | 23/23 passing |
+| `scripts/prod_roundtrip.py` on the live API: fpe (with `key_version`), tokenize and JSON round trips, plus tenant isolation with two accounts (account 2 cannot restore account 1's tokens; hashes differ) | 8/8 passing |
+| A **real LLM** (Claude, `claude-haiku-5-5`) in the loop, live API: LangChain wrapper + middleware, LlamaIndex query engine, both example scripts | passing. LlamaIndex needs `anthropic<2` (upstream `llama-index-llms-anthropic` 0.13.0 breaks on anthropic 2.x; pinned in the `examples` extra) |
 | Inside Claude Desktop / Cursor UI | not tested (the stdio protocol path is tested via the MCP SDK client) |

@@ -41,7 +41,7 @@ class ShowWhatTheLLMSees(BaseCallbackHandler):
 def get_llm():
     if os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
-        return ChatAnthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=300), True
+        return ChatAnthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=1024), True
     # Offline stand-in so the example runs without an LLM key: it replies using what it received.
     from langchain_core.language_models import BaseChatModel
     from langchain_core.outputs import ChatGeneration, ChatResult

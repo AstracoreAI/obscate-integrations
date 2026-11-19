@@ -69,7 +69,7 @@ class ShowPrompt(CustomLLM):
 def get_llm():
     if os.environ.get("ANTHROPIC_API_KEY"):
         from llama_index.llms.anthropic import Anthropic
-        return Anthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=300)
+        return Anthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=1024)
     print("(no ANTHROPIC_API_KEY: using a local stand-in LLM)")
     return StandInLLM()
 

@@ -14,7 +14,8 @@ keywords = ["llama-index", "llamaindex", "pii", "redaction", "privacy", "rag", "
 dependencies = ["llama-index-core>=0.12,<0.15", "httpx>=0.27"]
 
 [project.optional-dependencies]
-examples = ["llama-index-llms-anthropic>=0.6"]
+# anthropic<2: llama-index-llms-anthropic 0.13.0 breaks on anthropic 2.x (MessageParam is a Union there)
+examples = ["llama-index-llms-anthropic>=0.6", "anthropic>=0.75,<2"]
 test = ["pytest>=8"]
 
 [project.urls]

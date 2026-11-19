@@ -96,6 +96,11 @@ never breaks an answer. If you keep fpe output to restore later, keep
 - **Embeddings.** Your embedding model sees raw text when you index and query.
   If it is a remote API, use a local embedding model or redact documents
   before indexing.
+- **Partial values can't be restored.** If the model quotes only part of a
+  redacted value ("card ending in 7588", where 7588 is the end of the fpe
+  token), that fragment comes back as-is and is wrong. Seen with real Claude
+  output. Ask the model to repeat values whole, or use `tokenize`, whose
+  `[CREDIT_CARD_1]` tokens models don't split.
 - **Streaming.** Answers are read to completion and then restored, because a
   token can be split across chunks.
 - **LlamaIndex's own DEBUG logs.** `llama_index.core.indices.utils` logs

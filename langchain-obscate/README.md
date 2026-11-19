@@ -108,6 +108,11 @@ with_obscate(llm, strategy="tokenize", labels=["EMAIL", "PHONE"], min_confidence
   in one request, 1 unit per 100 KB). Restores are free. A 5-step agent run
   uses 5 units, so the free tier covers about 200 such runs a month.
   ([Pricing](https://obscate.com/pricing).)
+- **Partial values can't be restored.** If the model quotes only part of a
+  redacted value ("card ending in 7588", where 7588 is the end of the fpe
+  token), that fragment comes back as-is and is wrong. Seen with real Claude
+  output. Ask the model to repeat values whole, or use `tokenize`, whose
+  `[CREDIT_CARD_1]` tokens models don't split.
 - **Streaming is buffered.** `stream()` on the wrapper yields one restored
   chunk at the end. With the agent middleware, `stream_mode="messages"` shows
   the raw, still-redacted tokens; the messages in agent state are restored.

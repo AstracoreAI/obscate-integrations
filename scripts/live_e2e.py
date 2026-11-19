@@ -132,7 +132,7 @@ def run_langchain() -> None:
 
     if os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
-        llm = ChatAnthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=200)
+        llm = ChatAnthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=1024)
         ans = with_obscate(llm).invoke(
             "Repeat this email address exactly and nothing else: ravi.kumar@example.com")
         check("Real LLM (Anthropic): answer restored to the original email",
@@ -172,7 +172,7 @@ def run_llamaindex() -> None:
 
     if os.environ.get("ANTHROPIC_API_KEY"):
         from llama_index.llms.anthropic import Anthropic
-        real = Anthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=200)
+        real = Anthropic(model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5"), max_tokens=1024)
         r = ObscateQueryEngine.wrap(index.as_query_engine(llm=real)).query(
             "What is the customer's email address? Reply with the address only.")
         check("Real LLM (Anthropic): answer restored to the original email", "ravi.kumar@example.com" in str(r))
