@@ -1,4 +1,18 @@
-# Publishing and listings: prepared, NOT submitted
+# Publishing and listings — status (updated 2026-11-19)
+
+- GitHub: PUBLIC at https://github.com/AstracoreAI/obscate-integrations (main only; MIT; obscate-api stays private).
+- PyPI: 0.1.0 of all three live. obscate-mcp 0.1.1 (README: self-hosted "in pilot") built and twine-checked in
+  `dist-0.1.1/`; NOT uploaded — the owner uploads it with a project-scoped token.
+- MCP registry: signing key generated at ~/.config/obscate/mcp-registry-ed25519.pem (0600, outside git).
+  Waiting for the owner to add the apex TXT record on obscate.com, and for obscate-mcp 0.1.1 on PyPI
+  (server.json says 0.1.1). Then: `mcp-publisher login dns --domain obscate.com --private-key <hex>` and
+  `mcp-publisher publish` from obscate-mcp/.
+- punkpeye/awesome-mcp-servers: PR opened — https://github.com/punkpeye/awesome-mcp-servers/pull/20028
+- appcypher/awesome-mcp-servers: ARCHIVED (read-only since 2026-05); no PR possible.
+
+---
+
+# Original plan (kept for reference)
 
 Nothing in this folder has been uploaded, published or submitted anywhere.
 Every step below needs the owner (Skycast) to do or approve it.
