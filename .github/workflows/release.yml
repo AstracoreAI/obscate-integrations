@@ -1,0 +1,91 @@
+# Release one package to PyPI with Trusted Publishing (OIDC): no API token
+# exists anywhere, in this repo or in GitHub secrets.
+#
+# Trigger: push a tag named <package>-v<version>, for example
+#   git tag obscate-mcp-v0.1.2 && git push origin obscate-mcp-v0.1.2
+# The tag's version must equal the version in <package>/pyproject.toml.
+#
+# One-time setup on PyPI, per package (Manage project → Publishing → Add a
+# trusted publisher → GitHub): owner AstracoreAI, repository
+# obscate-integrations, workflow release.yml, environment pypi.
+name: release
+
+on:
+  push:
+    tags:
+      - "obscate-mcp-v*"
+      - "langchain-obscate-v*"
+      - "llama-index-postprocessor-obscate-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      package: ${{ steps.meta.outputs.package }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+
+      - name: Work out the package and check the version
+        id: meta
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in
+            obscate-mcp-v*) pkg=obscate-mcp ;;
+            langchain-obscate-v*) pkg=langchain-obscate ;;
+            llama-index-postprocessor-obscate-v*) pkg=llama-index-postprocessor-obscate ;;
+            *) echo "unknown tag $TAG"; exit 1 ;;
+          esac
+          tag_version="${TAG#"$pkg"-v}"
+          file_version="$(python3 -c "import tomllib,sys;print(tomllib.load(open(sys.argv[1],'rb'))['project']['version'])" "$pkg/pyproject.toml")"
+          if [ "$tag_version" != "$file_version" ]; then
+            echo "tag says $tag_version but $pkg/pyproject.toml says $file_version"; exit 1
+          fi
+          echo "package=$pkg" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests (fake API, no network)
+        env:
+          PKG: ${{ steps.meta.outputs.package }}
+        run: |
+          set -euo pipefail
+          uv venv --python 3.12 .venv
+          uv pip install --python .venv/bin/python -e "./$PKG[test]" anyio
+          cd "$PKG" && ../.venv/bin/python -m pytest -q
+
+      - name: Build sdist and wheel
+        env:
+          PKG: ${{ steps.meta.outputs.package }}
+        run: |
+          set -euo pipefail
+          uv build "$PKG" --out-dir dist
+          uvx twine check --strict dist/*
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/${{ needs.build.outputs.package }}/
+    permissions:
+      id-token: write # OIDC token for PyPI Trusted Publishing; nothing else
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3

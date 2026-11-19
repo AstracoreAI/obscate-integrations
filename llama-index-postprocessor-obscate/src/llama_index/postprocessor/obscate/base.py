@@ -56,7 +56,7 @@ class ObscateNodeRedactor:
         self.strategy, self.labels, self.min_confidence = strategy, labels, min_confidence
         self.redact_metadata = redact_metadata
         self.client = client or ObscateClient(api_key=api_key, base_url=base_url,
-                                              user_agent="llama-index-postprocessor-obscate/0.1.0")
+                                              user_agent="llama-index-postprocessor-obscate/0.1.1")
 
     def __repr__(self) -> str:
         return f"ObscateNodeRedactor(strategy={self.strategy!r}, client={self.client!r})"

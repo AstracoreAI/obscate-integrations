@@ -4,7 +4,7 @@ from .redactor import ObscateRedactor
 from .runnable import ObscateRedaction, with_obscate
 from .tools import ObscateDetectTool, ObscateRedactTool
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = ["ObscateClient", "ObscateError", "RestoreContext", "ObscateRedactor", "ObscateRedaction",
            "with_obscate", "ObscateMiddleware", "ObscateRedactTool", "ObscateDetectTool"]
 

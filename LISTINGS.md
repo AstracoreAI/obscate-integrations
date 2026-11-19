@@ -3,6 +3,11 @@
 - GitHub: PUBLIC at https://github.com/AstracoreAI/obscate-integrations (main only; MIT; obscate-api stays private).
 - PyPI: langchain-obscate and llama-index-postprocessor-obscate 0.1.0; obscate-mcp 0.1.1 (README: self-hosted "in pilot"),
   uploaded by the owner 2026-11-19.
+  Releases from now on: Trusted Publishing (OIDC) via .github/workflows/release.yml — no PyPI token anywhere.
+  Push a tag `<package>-v<version>` matching pyproject (e.g. `obscate-mcp-v0.1.2`); the workflow tests, builds,
+  `twine check`s and publishes. One-time PyPI setup per project: Publishing → GitHub publisher, owner AstracoreAI,
+  repo obscate-integrations, workflow release.yml, environment pypi. Next: obscate-mcp 0.1.2, langchain-obscate
+  0.1.1, llama-index-postprocessor-obscate 0.1.1 (README-only: partial-value guidance from the 1,800-reply test).
 - MCP registry: PUBLISHED com.obscate/mcp 0.1.1 (2026-11-19), DNS-verified via the apex TXT record on obscate.com.
   Signing key: ~/.config/obscate/mcp-registry-ed25519.pem (0600, outside git). To publish a new version: bump
   server.json + pyproject, upload to PyPI, then `mcp-publisher login dns --domain obscate.com --private-key <hex>`

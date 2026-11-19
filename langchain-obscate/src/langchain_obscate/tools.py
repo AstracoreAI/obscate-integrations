@@ -38,7 +38,7 @@ class ObscateRedactTool(BaseTool):
 
     def __init__(self, client: ObscateClient | None = None, **kw: Any):
         super().__init__(**kw)
-        self._client = client or ObscateClient(user_agent="langchain-obscate/0.1.0")
+        self._client = client or ObscateClient(user_agent="langchain-obscate/0.1.1")
 
     def _run(self, text: str, run_manager: Any = None) -> str:
         r, _ = self._client.redact(text, "fpe", self.labels)
@@ -59,7 +59,7 @@ class ObscateDetectTool(BaseTool):
 
     def __init__(self, client: ObscateClient | None = None, **kw: Any):
         super().__init__(**kw)
-        self._client = client or ObscateClient(user_agent="langchain-obscate/0.1.0")
+        self._client = client or ObscateClient(user_agent="langchain-obscate/0.1.1")
 
     @staticmethod
     def _summ(r: dict) -> str:

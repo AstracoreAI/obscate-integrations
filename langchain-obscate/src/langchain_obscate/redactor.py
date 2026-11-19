@@ -99,7 +99,7 @@ class ObscateRedactor:
         self.min_confidence = min_confidence
         self.redact_system = redact_system
         self.client = client or ObscateClient(api_key=api_key, base_url=base_url,
-                                              user_agent="langchain-obscate/0.1.0")
+                                              user_agent="langchain-obscate/0.1.1")
 
     def __repr__(self) -> str:
         return f"ObscateRedactor(strategy={self.strategy!r}, client={self.client!r})"
