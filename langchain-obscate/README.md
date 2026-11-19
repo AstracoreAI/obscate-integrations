@@ -46,6 +46,9 @@ For output a person will read:
   and render any masked form ("ending in 4242") in your own code from the
   original value after restore.
 
+Method, per-model results and limitations: [We measured how often LLMs quote
+part of a redacted value](https://obscate.com/blog/partial-values-research).
+
 Partial references are a boundary of any reversible-redaction approach, not
 only ours: once the model only sees a stand-in, a fragment of the stand-in can
 never map back to a fragment of the original.

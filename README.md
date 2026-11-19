@@ -22,6 +22,16 @@ GSTIN, IBAN, SSN, IP, AWS keys) are near-perfect because they use patterns
 and checksums. Names and places use NER and are best-effort; the LlamaIndex
 example shows a name being missed.
 
+**Text a person will read: use `tokenize`.** If a model quotes only part of
+an `fpe` stand-in ("card ending in 7588"), that fragment can't be restored and
+the customer sees wrong, real-looking digits. In 1,800 Claude replies, 68% of
+plain-prompt `fpe` replies did this, 58% for `synthetic` and 0% for
+`tokenize`. A "repeat values in full" prompt line removes the wrong digits but
+prints the full card number in about two-thirds of replies. `fpe` stays the
+default because it shines on data machines read (payloads, logs, validators).
+Details in each package README and in
+[the research write-up](https://obscate.com/blog/partial-values-research).
+
 **Privacy.** No package logs, prints or stores raw text, detected values or
 restore maps. Each package has a test that captures every logger at DEBUG,
 plus stdout, stderr and the working directory, on success and failure paths.

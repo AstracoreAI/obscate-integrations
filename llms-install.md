@@ -66,5 +66,5 @@ as `Card 4242 4242 4242 4242 for test@example.com` and `strategy: "fpe"`, and
 - Known limitation: if a model quotes only part of a redacted value ("card ending
   in 7588"), that fragment cannot be restored, and with `fpe`/`synthetic` the wrong
   digits look real. For text a person will read, use `strategy: "tokenize"`.
-  Details: https://obscate.com/docs/mcp#partial-values
+  Details: https://obscate.com/docs/mcp#partial-values · Research: https://obscate.com/blog/partial-values-research
 - Docs: https://obscate.com/docs/mcp · Source (MIT): https://github.com/AstracoreAI/obscate-integrations
