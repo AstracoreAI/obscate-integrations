@@ -8,6 +8,21 @@
   server.json + pyproject, upload to PyPI, then `mcp-publisher login dns --domain obscate.com --private-key <hex>`
   and `mcp-publisher publish` from obscate-mcp/. Keep the TXT record in place.
 - punkpeye/awesome-mcp-servers: PR opened — https://github.com/punkpeye/awesome-mcp-servers/pull/20028
+- LangChain docs listing: issue filed https://github.com/langchain-ai/docs/issues/7899 (form fields; labels need a
+  maintainer — asked in a comment). Component: middleware (`ObscateMiddleware`), docs https://obscate.com/docs/langchain.
+- Glama: `glama.json` committed (maintainers: AstracoreAI). TODO (owner, in browser): run the Claim flow on
+  glama.ai for this repo; re-run it after any change to glama.json.
+- Cline MCP marketplace: READY, NOT SUBMITTED. Logo: assets/obscate-logo-400.png; install guide: llms-install.md.
+  The form requires confirming "I have tested that Cline can successfully set up this server using only the
+  README.md and/or llms-install.md file" — do that test first (VS Code + Cline: ask Cline to install from this
+  repo URL, give it a free key, call list_entities and a redact/restore), then file
+  https://github.com/cline/mcp-marketplace/issues/new?template=mcp-server-submission.yml with the repo URL and
+  https://raw.githubusercontent.com/AstracoreAI/obscate-integrations/main/assets/obscate-logo-400.png
+- LlamaIndex: no documented listing path for external packages (main repo no longer accepts integrations;
+  LlamaHub redirects to a docs page with no submit route). Ask maintainers on Discord / GitHub discussions.
+- PulseMCP: submissions paused; says it will ingest the official registry when it reopens. Nothing to do.
+- mcp.so: only a paid $39 listing was verifiable — skipped (needs owner approval to spend).
+- Smithery: needs an MCPB bundle; process unverified — later, if worth it.
 - appcypher/awesome-mcp-servers: ARCHIVED (read-only since 2026-05); no PR possible.
 
 ---
