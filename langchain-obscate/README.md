@@ -23,22 +23,28 @@ look like real digits, and your user sees a confident, wrong statement about
 their own data. Assistants paraphrase values like this all the time, so expect
 it in normal use.
 
-What we measured with real Claude (`claude-haiku-5-5`, a support-reply prompt,
-3 runs each; a small test, not a guarantee):
+What we measured: 1,800 replies from Claude Haiku 5.5, Sonnet 5.5 and Opus 5.5
+(5 synthetic support scenarios, 20 runs per condition, 2026-11-19):
 
-| setup | replies stating wrong card digits |
+| setup | replies stating wrong-but-real-looking digits after restore |
 |---|---|
-| `fpe`, plain prompt | 2 of 3 |
-| `fpe` + the instruction below in the system prompt | 0 of 3 |
-| `tokenize`, plain prompt | 0 of 3 |
+| `fpe`, plain prompt | 204 of 300 (68%) |
+| `synthetic`, plain prompt | 173 of 300 (58%) |
+| `tokenize`, plain prompt | 0 of 300 |
 
-For user-facing output where the model may paraphrase values:
+`synthetic` has a second variant: models greet the customer by the stand-in's
+first name, which can't be restored (241 of 300 plain-prompt replies).
 
-- Add to your system prompt: *"When you mention a card number, email or phone
-  number, repeat it exactly and in full as given. Never abbreviate, mask or
-  quote part of it."*
-- Or use `strategy="tokenize"`: models treat `[CREDIT_CARD_1]` as a unit and
-  don't split it, and restore only touches tokens in its map.
+For output a person will read:
+
+- Use `strategy="tokenize"`: models treat `[CREDIT_CARD_1]` as a unit and don't split
+  it, and restore only touches tokens in its map.
+- Don't rely on a "repeat values exactly and in full" system-prompt line. It cut
+  wrong digits to about 1%, but about two-thirds of replies then printed the
+  **full** card or Aadhaar number to the customer.
+- Better still (not yet measured): ask the model not to restate identifiers,
+  and render any masked form ("ending in 4242") in your own code from the
+  original value after restore.
 
 Partial references are a boundary of any reversible-redaction approach, not
 only ours: once the model only sees a stand-in, a fragment of the stand-in can

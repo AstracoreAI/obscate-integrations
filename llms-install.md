@@ -64,6 +64,7 @@ as `Card 4242 4242 4242 4242 for test@example.com` and `strategy: "fpe"`, and
 - If you store redacted tokens to restore later, also store the `key_version`
   returned by `redact` and pass it to `restore`.
 - Known limitation: if a model quotes only part of a redacted value ("card ending
-  in 7588"), that fragment cannot be restored. Ask the model to repeat values in
-  full, or use `strategy: "tokenize"`. Details: https://obscate.com/docs/mcp
+  in 7588"), that fragment cannot be restored, and with `fpe`/`synthetic` the wrong
+  digits look real. For text a person will read, use `strategy: "tokenize"`.
+  Details: https://obscate.com/docs/mcp#partial-values
 - Docs: https://obscate.com/docs/mcp · Source (MIT): https://github.com/AstracoreAI/obscate-integrations
