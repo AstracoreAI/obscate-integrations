@@ -15,7 +15,7 @@ Every step below needs the owner (Skycast) to do or approve it.
    `llama-index-postprocessor-obscate`. PyPI is free. All three names were
    free on PyPI when checked on 2026-11-19 (see the bottom of this file).
 
-## 1. PyPI (free)
+## 1. PyPI (free) — DONE 2026-11-19: obscate-mcp, langchain-obscate, llama-index-postprocessor-obscate 0.1.0 uploaded by the owner; clean-install verified
 
 ```bash
 cd obscate-integrations

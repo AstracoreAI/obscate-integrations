@@ -67,5 +67,6 @@ accept it, because the model carries state between tool calls. Only text you
 | `scripts/live_e2e.py` against the obscate-api `per-account-keys` branch (per-account keys, `key_version`) running locally on port 8766 | 23/23 passing |
 | Same checks against the **live** https://api.obscate.com | 23/23 passing |
 | `scripts/prod_roundtrip.py` on the live API: fpe (with `key_version`), tokenize and JSON round trips, plus tenant isolation with two accounts (account 2 cannot restore account 1's tokens; hashes differ) | 8/8 passing |
+| Published to PyPI (0.1.0); clean install (`uvx obscate-mcp`, fresh `pip install` of all three, no local source) then `scripts/live_e2e.py` against the live API | 23/23 passing |
 | A **real LLM** (Claude, `claude-haiku-5-5`) in the loop, live API: LangChain wrapper + middleware, LlamaIndex query engine, both example scripts | passing. LlamaIndex needs `anthropic<2` (upstream `llama-index-llms-anthropic` 0.13.0 breaks on anthropic 2.x; pinned in the `examples` extra) |
 | Inside Claude Desktop / Cursor UI | not tested (the stdio protocol path is tested via the MCP SDK client) |
