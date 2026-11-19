@@ -33,3 +33,7 @@ packages = ["src/obscate_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.hatch.build.targets.sdist]
+# server.json is MCP-registry metadata, published separately; not part of the package
+exclude = ["server.json"]
