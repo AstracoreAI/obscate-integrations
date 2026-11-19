@@ -86,6 +86,11 @@ stays redacted.
 can't be told apart from an fpe token, and restore turns it into a different
 value. Use `tokenize` if that matters.
 
+**Key versions are handled for you.** The query engine restores with the
+`key_version` its redaction returned, so a key rotation on Obscate's side
+never breaks an answer. If you keep fpe output to restore later, keep
+`key_version` with it.
+
 ## What it does not cover
 
 - **Embeddings.** Your embedding model sees raw text when you index and query.

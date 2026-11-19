@@ -190,3 +190,19 @@ def test_privacy_nothing_sensitive_logged_or_written(client, model, caplog, caps
         assert v not in logged and v not in out.out + out.err
     assert list(tmp_path.iterdir()) == []
     assert "nope" not in repr(bad)
+
+
+@pytest.mark.parametrize("as_messages", [True, False])
+def test_key_version_carried_through_round_trip(client, model, fake, as_messages):
+    """Keys rotate on the server while the LLM is thinking: the wrapper must
+    restore with the version the redaction was made under, with no developer code."""
+    from langchain_core.runnables import RunnableLambda
+
+    def rotating_llm(x):
+        fake.key_version = 2
+        return model.invoke(x) if as_messages else f"Echo: {x}"
+    safe = ObscateRedaction(RunnableLambda(rotating_llm), client=client)
+    out = safe.invoke([HumanMessage(SECRET)] if as_messages else SECRET)
+    assert (out.content if as_messages else out) == f"Echo: {SECRET}"
+    restore_calls = [b for p, b in fake.calls if p.startswith("/v1/restore")]
+    assert restore_calls and all(b.get("key_version") == 1 for b in restore_calls)

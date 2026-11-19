@@ -12,6 +12,13 @@ Privacy contract (tested in every package):
     The API never echoes request bodies in errors, so neither do we.
   * ``RestoreContext`` keeps the token map in memory only and hides it from
     ``repr()`` so it does not end up in tracebacks or debug logs by accident.
+
+Key versions: every redact response carries ``key_version`` (the version of
+your account's key that made the tokens). ``RestoreContext`` keeps it and
+every restore sends it back, so a redact -> LLM -> restore round trip keeps
+working across a server-side key rotation with no code on your side. If you
+store fpe tokens to restore later without a context, store ``key_version``
+with them too (see https://obscate.com/docs/strategies).
 """
 from __future__ import annotations
 
@@ -56,6 +63,7 @@ class RestoreContext:
     min_confidence: float = 0.0
     hints: bool = True
     field_map: dict[str, str | None] | None = field(default=None, repr=False)
+    key_version: int | None = None   # from the redact response; None = server's current
 
     @property
     def reversible(self) -> bool:
@@ -65,10 +73,13 @@ class RestoreContext:
         """Combine two contexts from the same strategy (token maps are unioned)."""
         if other.strategy != self.strategy:
             raise ValueError("cannot merge restore contexts from different strategies")
+        if None not in (self.key_version, other.key_version) and self.key_version != other.key_version:
+            raise ValueError("cannot merge restore contexts made under different key versions")
         merged = dict(self.token_map)
         merged.update(other.token_map)
+        kv = self.key_version if self.key_version is not None else other.key_version
         return RestoreContext(self.strategy, merged, [], False, self.labels,
-                              self.min_confidence, self.hints, self.field_map)
+                              self.min_confidence, self.hints, self.field_map, kv)
 
 
 def _check_strategy(strategy: str) -> None:
@@ -183,8 +194,10 @@ class ObscateClient:
     @staticmethod
     def _restore_route(text: str, ctx: RestoreContext) -> tuple[str, dict]:
         if ctx.strategy == "fpe":
-            return "/v1/restore-fpe", {"text": text, "labels": ctx.labels,
-                                       "min_confidence": ctx.min_confidence}
+            body = {"text": text, "labels": ctx.labels, "min_confidence": ctx.min_confidence}
+            if ctx.key_version is not None:
+                body["key_version"] = ctx.key_version
+            return "/v1/restore-fpe", body
         if ctx.strategy in ("tokenize", "synthetic"):
             return "/v1/restore", {"text": text, "token_map": ctx.token_map}
         raise ValueError(f"strategy {ctx.strategy!r} is one-way and cannot be restored; "
@@ -194,15 +207,20 @@ class ObscateClient:
     def _restore_json_body(payload: Any, ctx: RestoreContext) -> dict:
         if not ctx.reversible:
             raise ValueError(f"strategy {ctx.strategy!r} is one-way and cannot be restored")
-        return {"json": payload, "token_map": ctx.token_map, "fpe": ctx.strategy == "fpe",
+        body = {"json": payload, "token_map": ctx.token_map, "fpe": ctx.strategy == "fpe",
                 "type_changes": ctx.type_changes or None, "keys_redacted": ctx.keys_redacted,
                 "labels": ctx.labels, "min_confidence": ctx.min_confidence,
                 "hints": ctx.hints, "field_map": ctx.field_map}
+        if ctx.key_version is not None:
+            body["key_version"] = ctx.key_version
+        return body
 
     @staticmethod
     def _ctx(r: dict, strategy, labels, min_confidence, hints=True, field_map=None) -> RestoreContext:
+        kv = r.get("key_version")
         return RestoreContext(strategy, dict(r.get("token_map") or {}), list(r.get("type_changes") or []),
-                              bool(r.get("keys_redacted")), labels, min_confidence, hints, field_map)
+                              bool(r.get("keys_redacted")), labels, min_confidence, hints, field_map,
+                              kv if isinstance(kv, int) else None)
 
     # -- sync API ---------------------------------------------------------------
     def redact(self, text: str, strategy: str = "fpe", labels: list[str] | None = None,

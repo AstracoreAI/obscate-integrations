@@ -104,7 +104,13 @@ agent → restore_json({"json": <the tool's reply>, "type_changes": []})
 
 With `strategy: "tokenize"` the redacted values look like `[EMAIL_1]`, and
 you pass the returned `token_map` to `restore` / `restore_json`. With `fpe`
-(the default) no map exists. Restore needs only your key.
+(the default) no map exists. Restore needs only your key, plus the
+`key_version` that `redact` returned. Pass it back to `restore` or
+`restore_json`. It names the version of your account's key that made the
+tokens, so restore keeps working if Obscate rotates keys in between. If it is
+left out, the current version is used.
+
+**If you store redacted text to restore later**, store `key_version` with it.
 
 **fpe caveat:** an email, phone number or ID that a model *invents*, which
 was never redacted, is indistinguishable from an fpe token. `restore` will

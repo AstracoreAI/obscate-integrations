@@ -152,3 +152,27 @@ async def test_privacy_nothing_sensitive_is_logged_or_written(caplog, tmp_path, 
         assert v not in out.out + out.err
     assert list(tmp_path.iterdir()) == []
     assert "ob_test_key" not in repr(ObscateClient(api_key="ob_test_key"))
+
+
+async def test_key_version_is_returned_and_restores_after_rotation():
+    """A server-side key rotation between redact and restore must not break the
+    round trip: redact returns key_version, restore sends it back."""
+    fake, server = make()
+    async with Client(server) as c:
+        r = data(await c.call_tool("redact", {"text": SECRET_TEXT}))
+        rj = data(await c.call_tool("redact_json", {"json": {"note": SECRET_TEXT}}))
+        assert r["key_version"] == rj["key_version"] == 1
+        fake.key_version = 2                                   # rotation happens mid-flight
+        back = data(await c.call_tool("restore", {"text": r["redacted"], "key_version": 1}))
+        jback = data(await c.call_tool("restore_json", {"json": rj["redacted"], "key_version": 1}))
+        stale = data(await c.call_tool("restore", {"text": r["redacted"]}))
+    assert back["text"] == SECRET_TEXT and jback["json"] == {"note": SECRET_TEXT}
+    assert stale["text"] != SECRET_TEXT                        # proves the version mattered
+
+
+def test_restore_context_merge_respects_key_version():
+    from obscate_mcp._client import RestoreContext
+    a = RestoreContext("tokenize", {"[A_1]": "x"}, key_version=1)
+    assert a.merge(RestoreContext("tokenize", {"[B_1]": "y"})).key_version == 1
+    with pytest.raises(ValueError):
+        a.merge(RestoreContext("tokenize", key_version=2))

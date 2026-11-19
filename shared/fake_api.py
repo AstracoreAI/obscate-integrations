@@ -6,7 +6,10 @@ fixed list of names, which is enough to exercise the integrations' plumbing
 (request shapes, restore paths, error handling, privacy). Real detection
 quality is tested in obscate-api and in the live end-to-end runs.
 
-fpe here is a toy reversible encoding ("[EMAIL:hex]"), not FF1.
+fpe here is a toy reversible encoding ("[EMAIL:hex]"), not FF1. It does model
+key versions: tokens embed the version that made them, redact responses
+return ``key_version``, and restoring under any other version yields a wrong
+value (as real FF1 would), so tests can prove the version is carried through.
 """
 from __future__ import annotations
 
@@ -33,9 +36,11 @@ def _spans(text: str):
 
 
 class FakeObscate:
-    def __init__(self, api_key: str = "ob_test_key", fail_with: int | None = None):
+    def __init__(self, api_key: str = "ob_test_key", fail_with: int | None = None,
+                 key_version: int = 1):
         self.api_key = api_key
         self.fail_with = fail_with
+        self.key_version = key_version            # bump it to simulate a key rotation
         self.calls: list[tuple[str, Any]] = []   # (path, parsed body) — test-side only
 
     # -- engine -----------------------------------------------------------------
@@ -43,7 +48,7 @@ class FakeObscate:
         out, cur, ents = [], 0, []
         for s, e, label, val in _spans(text):
             if strategy == "fpe":
-                rep = f"[{label}:{val.encode().hex()}]"
+                rep = f"[{label}:{f'{self.key_version}|{val}'.encode().hex()}]"
             elif strategy in ("tokenize", "synthetic"):
                 if val not in st["seen"]:
                     st["n"][label] = st["n"].get(label, 0) + 1
@@ -61,9 +66,12 @@ class FakeObscate:
         out.append(text[cur:])
         return "".join(out), ents
 
-    @staticmethod
-    def _restore_fpe(text: str) -> str:
-        return _FPE_TOKEN.sub(lambda m: bytes.fromhex(m.group(2)).decode(), text)
+    def _restore_fpe(self, text: str, version: int | None = None) -> str:
+        v = str(self.key_version if version is None else version)
+        def dec(m):
+            made, _, val = bytes.fromhex(m.group(2)).decode().partition("|")
+            return val if made == v else "WRONG-KEY-VERSION"
+        return _FPE_TOKEN.sub(dec, text)
 
     @staticmethod
     def _restore_map(text: str, token_map: dict) -> str:
@@ -109,7 +117,8 @@ class FakeObscate:
             return httpx.Response(200, json={"redacted": red, "strategy": body["strategy"],
                                              "reversible": body["strategy"] in ("fpe", "tokenize", "synthetic"),
                                              "token_map": st["map"], "entities": ents,
-                                             "counts": {"total": len(ents)}})
+                                             "counts": {"total": len(ents)},
+                                             "key_version": self.key_version})
         if path == "/v1/detect":
             ents = [{"label": l, "text": v, "start": s, "end": e, "confidence": 0.99}
                     for s, e, l, v in _spans(body["text"])]
@@ -117,7 +126,8 @@ class FakeObscate:
         if path == "/v1/restore":
             return httpx.Response(200, json={"text": self._restore_map(body["text"], body["token_map"])})
         if path == "/v1/restore-fpe":
-            return httpx.Response(200, json={"text": self._restore_fpe(body["text"])})
+            return httpx.Response(200, json={"text": self._restore_fpe(body["text"],
+                                                                       body.get("key_version"))})
         if path == "/v1/redact-json":
             ents: list = []
 
@@ -129,10 +139,11 @@ class FakeObscate:
             return httpx.Response(200, json={"redacted": red, "strategy": body["strategy"],
                                              "token_map": st["map"], "entities": ents,
                                              "type_changes": [], "pii_in_keys": 0, "keys_redacted": False,
-                                             "counts": {"total": len(ents)}})
+                                             "counts": {"total": len(ents)},
+                                             "key_version": self.key_version})
         if path == "/v1/restore-json":
             if body.get("fpe"):
-                out = self._walk(body["json"], self._restore_fpe)
+                out = self._walk(body["json"], lambda s: self._restore_fpe(s, body.get("key_version")))
             else:
                 out = self._walk(body["json"], lambda s: self._restore_map(s, body["token_map"]))
             return httpx.Response(200, json={"json": out})

@@ -99,6 +99,11 @@ with_obscate(llm, strategy="tokenize", labels=["EMAIL", "PHONE"], min_confidence
 - **fpe caveat.** If the model *invents* a new email, phone or ID that was
   never redacted, fpe restore cannot tell it from a token and turns it into a
   different value. Use `tokenize` if your model makes up contact details.
+- **Key versions are handled for you.** Each redaction records the
+  `key_version` of your account's key, and the wrapper sends it back on
+  restore. A round trip keeps working even if Obscate rotates keys mid-call.
+  If you keep a `RestoreContext` (or fpe output) to restore later, keep its
+  `key_version` too.
 - **Cost.** One Obscate request per model call (the whole conversation goes
   in one request, 1 unit per 100 KB). Restores are free. A 5-step agent run
   uses 5 units, so the free tier covers about 200 such runs a month.

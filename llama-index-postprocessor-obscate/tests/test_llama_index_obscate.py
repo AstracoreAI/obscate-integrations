@@ -149,3 +149,16 @@ def test_privacy_nothing_sensitive_logged_or_written(index, client, caplog, caps
     for v in RAW + ["[EMAIL_1]"]:
         assert v not in logged and v not in out.out + out.err
     assert list(tmp_path.iterdir()) == []
+
+
+def test_key_version_carried_through_round_trip(index, client, fake):
+    class RotatingLLM(RecordingLLM):
+        """Rotates the fake API's key version while 'thinking'."""
+        def complete(self, prompt: str, formatted: bool = False, **kw: Any) -> CompletionResponse:
+            fake.key_version = 2
+            return super().complete(prompt, formatted, **kw)
+    llm = RotatingLLM()
+    qe = ObscateQueryEngine.wrap(index.as_query_engine(llm=llm, similarity_top_k=2), client=client)
+    resp = qe.query("What did Ravi Kumar ask?")
+    assert "ravi@example.com" in str(resp) and "WRONG-KEY-VERSION" not in str(resp)
+    assert [b.get("key_version") for p, b in fake.calls if p == "/v1/restore-fpe"] == [1]

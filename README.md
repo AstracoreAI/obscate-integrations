@@ -48,15 +48,23 @@ cp .env.example .env    # add OBSCATE_API_KEY, then:
 .venv/bin/python scripts/live_e2e.py
 ```
 
+**Key versions.** The API returns `key_version` with every redaction (the
+version of your account's key that made the tokens). `RestoreContext` carries
+it, and every restore sends it back, so in-flight round trips survive a
+server-side key rotation with no code from you. The MCP tools return it and
+accept it, because the model carries state between tool calls. Only text you
+*store* to restore later needs `key_version` stored next to it.
+
 ## Verification status (2026-11-19)
 
 | check | status |
 |---|---|
-| Unit tests (fake API, no network): mcp 13, langchain 15, llamaindex 12, repo 2 | passing |
+| Unit tests (fake API, no network): mcp 15, langchain 17, llamaindex 13, repo 2 | passing |
 | `scripts/live_e2e.py` against the **real Obscate engine running locally** (obscate-api working tree, port 8765, throwaway local key): 23 checks covering MCP over a real stdio subprocess, LangChain Runnable and agent middleware, LlamaIndex query engine and postprocessor | 23/23 passing |
 | Both `examples/quickstart.py` against the local engine with the stand-in LLM | run, output as shown in the READMEs |
 | Wheels and sdists build; `twine check` passes; `uvx --from <wheel> obscate-mcp` runs in a clean environment | done |
 | `server.json` validated against the MCP registry 2025-12-11 schema | done |
+| `scripts/live_e2e.py` against the obscate-api `per-account-keys` branch (per-account keys, `key_version`) running locally on port 8766 | 23/23 passing |
 | Same checks against the **live** https://api.obscate.com | **not yet run.** Needs a live key in `.env` |
 | A **real LLM** (Anthropic) in the loop | **not yet run.** Needs `ANTHROPIC_API_KEY` (paid, under $0.01 per run) |
 | Inside Claude Desktop / Cursor UI | not tested (the stdio protocol path is tested via the MCP SDK client) |

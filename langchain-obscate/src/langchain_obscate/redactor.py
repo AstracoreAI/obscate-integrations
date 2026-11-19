@@ -157,7 +157,7 @@ class ObscateRedactor:
     def _reply_ctx(ctx: RestoreContext) -> RestoreContext:
         # type_changes/keys_redacted describe the *input* payload's paths, not the reply's.
         return RestoreContext(ctx.strategy, ctx.token_map, [], False, ctx.labels,
-                              ctx.min_confidence, ctx.hints, ctx.field_map)
+                              ctx.min_confidence, ctx.hints, ctx.field_map, ctx.key_version)
 
     # -- plain values (str / dict / list) -----------------------------------------
     def redact_value(self, value: Any) -> tuple[Any, RestoreContext]:

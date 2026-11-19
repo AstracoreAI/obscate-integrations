@@ -31,8 +31,8 @@ PAN, names, places, ...) reversibly. Typical agent flow:
 1. Before sending user data to another tool, model or third-party API, call
    `redact` (text) or `redact_json` (objects). Send the redacted output.
 2. When the reply comes back, call `restore` / `restore_json` with the same
-   `strategy` (and the `token_map` for tokenize/synthetic) to put the real
-   values back before showing it to the user.
+   `strategy` and `key_version` (and the `token_map` for tokenize/synthetic)
+   to put the real values back before showing it to the user.
 Default strategy `fpe` keeps formats (an email stays email-shaped) and needs no
 token_map to restore. Structured IDs are detected near-perfectly; names and
 places are best-effort, so review if recall on those matters.
@@ -77,29 +77,33 @@ def build_server(client: ObscateClient | None = None) -> MCPServer:
             raise _fail(e) from None
         out = {"redacted": r["redacted"], "strategy": strategy, "reversible": r.get("reversible"),
                "entities": _public_entities(r.get("entities", [])), "counts": r.get("counts", {})}
+        if r.get("key_version") is not None:
+            out["key_version"] = r["key_version"]
         if strategy in ("tokenize", "synthetic"):
             out["token_map"] = r.get("token_map", {})
             out["restore_with"] = "restore(text, strategy, token_map)"
         elif strategy == "fpe":
-            out["restore_with"] = "restore(text, strategy='fpe') - no token_map needed"
+            out["restore_with"] = "restore(text, strategy='fpe', key_version) - no token_map needed"
         return out
 
     @mcp.tool(annotations=_READ_ONLY)
     async def restore(text: str, strategy: Literal["fpe", "tokenize", "synthetic"] = "fpe",
                       token_map: dict[str, str] | None = None, labels: list[str] | None = None,
-                      min_confidence: float = 0.0) -> dict[str, Any]:
+                      min_confidence: float = 0.0, key_version: int | None = None) -> dict[str, Any]:
         """Put the original values back into text redacted by `redact`.
 
         Pass the same `strategy` (and `labels`/`min_confidence`) used to
-        redact. tokenize/synthetic also need the `token_map` returned by
-        `redact`. Free (no API units). Caveat for fpe: a new email/phone/ID
+        redact, and the `key_version` that `redact` returned (fpe tokens only
+        restore under the key version that made them). tokenize/synthetic
+        also need the `token_map` returned by `redact`. Free (no API units). Caveat for fpe: a new email/phone/ID
         that a model invented (never redacted) looks like an fpe token and will
         be decrypted into a different value; restore only text whose
         structured values came from your own redaction.
         """
         if strategy in ("tokenize", "synthetic") and token_map is None:
             raise ToolError(f"strategy {strategy!r} needs the token_map returned by redact")
-        ctx = RestoreContext(strategy, dict(token_map or {}), labels=labels, min_confidence=min_confidence)
+        ctx = RestoreContext(strategy, dict(token_map or {}), labels=labels, min_confidence=min_confidence,
+                             key_version=key_version)
         try:
             return {"text": await ob.arestore(text, ctx)}
         except (ObscateError, ValueError) as e:
@@ -139,8 +143,8 @@ def build_server(client: ObscateClient | None = None) -> MCPServer:
         overrides, e.g. {"product.name": null, "sku": "IGNORE",
         "$.rows[*].label": "PERSON"}. keys: "report" (default, count PII in
         keys), "strict" (refuse if keys contain PII), "redact" (redact keys
-        too). Keep `type_changes`, `keys_redacted` and (tokenize/synthetic)
-        `token_map` for restore_json. Costs 1 API unit per 100 KB.
+        too). Keep `type_changes`, `keys_redacted`, `key_version` and
+        (tokenize/synthetic) `token_map` for restore_json. Costs 1 API unit per 100 KB.
         """
         try:
             r, _ = await ob.aredact_json(json, strategy, labels, min_confidence, hints, field_map, keys)
@@ -150,6 +154,8 @@ def build_server(client: ObscateClient | None = None) -> MCPServer:
                "type_changes": r.get("type_changes", []), "keys_redacted": r.get("keys_redacted", False),
                "pii_in_keys": r.get("pii_in_keys", 0),
                "entities": _public_entities(r.get("entities", [])), "counts": r.get("counts", {})}
+        if r.get("key_version") is not None:
+            out["key_version"] = r["key_version"]
         if strategy in ("tokenize", "synthetic"):
             out["token_map"] = r.get("token_map", {})
         return out
@@ -160,15 +166,15 @@ def build_server(client: ObscateClient | None = None) -> MCPServer:
                            type_changes: list[dict] | None = None, keys_redacted: bool = False,
                            hints: bool = True, field_map: dict[str, str | None] | None = None,
                            labels: list[str] | None = None,
-                           min_confidence: float = 0.0) -> dict[str, Any]:
+                           min_confidence: float = 0.0, key_version: int | None = None) -> dict[str, Any]:
         """Restore a JSON value (any shape, e.g. a model's reply) redacted by
         `redact_json`. Pass back the same strategy, field_map and hints, plus
-        `type_changes`, `keys_redacted` and (tokenize/synthetic) `token_map`
-        from the redact_json result. Free (no API units)."""
+        `type_changes`, `keys_redacted`, `key_version` and (tokenize/synthetic)
+        `token_map` from the redact_json result. Free (no API units)."""
         if strategy in ("tokenize", "synthetic") and token_map is None:
             raise ToolError(f"strategy {strategy!r} needs the token_map returned by redact_json")
         ctx = RestoreContext(strategy, dict(token_map or {}), list(type_changes or []), keys_redacted,
-                             labels, min_confidence, hints, field_map)
+                             labels, min_confidence, hints, field_map, key_version)
         try:
             return {"json": await ob.arestore_json(json, ctx)}
         except (ObscateError, ValueError) as e:
